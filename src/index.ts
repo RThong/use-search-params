@@ -1,13 +1,7 @@
 import { isEmpty, mapValues, omitBy, size } from 'lodash';
 import type { ParseOptions, StringifyOptions } from 'query-string';
 import { parse, stringify } from 'query-string';
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as tmp from 'react-router';
 
 // ignore warning `"export 'useHistory' (imported as 'rc') was not found in 'react-router'`
@@ -19,11 +13,7 @@ type ParsedParams = Record<string, string | string[]>;
  * ?a= ?a=[] 过滤
  */
 const filterInvalid = (obj: Record<string, unknown>) =>
-  omitBy(
-    obj,
-    (val: unknown) =>
-      val === undefined || JSON.stringify(val) === '[]' || val === '',
-  );
+  omitBy(obj, (val: unknown) => val === undefined || JSON.stringify(val) === '[]' || val === '');
 
 /**
  * 比较两个对象里面的key value是否相等
@@ -69,8 +59,7 @@ const isShadowEqual = (
  * 过滤空对象query
  */
 // eslint-disable-next-line no-undefined
-const filterEmpty = (obj: ParsedParams | undefined) =>
-  isEmpty(obj) ? undefined : obj;
+const filterEmpty = (obj: ParsedParams | undefined) => (isEmpty(obj) ? undefined : obj);
 
 /**
  * 将对象中value从数字转成字符串
@@ -81,6 +70,10 @@ const transformObjValNumber2Str = (obj: QueryType | undefined) => {
     : undefined;
 };
 
+/**
+ * 判断obj的key是都都在target中
+ * @returns
+ */
 const isPartof = (obj: QueryType, target: ParsedParams) => {
   return !Object.keys(obj).some((key) => !(key in target));
 };
@@ -126,7 +119,6 @@ function useSearchParams(
           typeof val === 'function' ? val(prevSearchParamsRef.current) : val,
         ),
       });
-      console.log('【temp】', prevSearchParamsRef.current, temp);
 
       if (!isShadowEqual(prevSearchParamsRef.current, temp)) {
         const navigateMode = optionsRef.current?.navigateMode ?? 'push';
@@ -158,10 +150,7 @@ function useSearchParams(
         search: stringify(
           {
             ...transformObjValNumber2Str(_innerInitialQuery),
-            ...(parse(
-              urlSearch,
-              optionsRef.current?.parseOptions,
-            ) as ParsedParams),
+            ...(parse(urlSearch, optionsRef.current?.parseOptions) as ParsedParams),
           },
           optionsRef.current?.stringifyOptions,
         ),
@@ -171,8 +160,8 @@ function useSearchParams(
 
   useEffect(() => {
     const _innerInitialQuery = initialQueryRef.current;
-    console.log('【useEffect---】', _innerInitialQuery, urlSearch);
 
+    // 当url查询参数中没有initialQuery时，等待history.replace后再更新query
     if (
       _innerInitialQuery &&
       urlSearch &&
@@ -183,8 +172,6 @@ function useSearchParams(
     ) {
       return;
     }
-
-    console.log('【useEffect】', curSearchParams, prevSearchParamsRef.current);
 
     if (!isShadowEqual(curSearchParams, prevSearchParamsRef.current)) {
       setQuery(curSearchParams);
